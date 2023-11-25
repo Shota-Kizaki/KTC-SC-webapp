@@ -5,4 +5,4 @@ django-pyodbc-azure
 python-dotenv
 openai==0.28.1
 langchain
-django-glrm
+#django-glrm
