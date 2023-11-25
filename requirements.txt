@@ -1,4 +1,4 @@
-Django
+Django==4.2.7
 whitenoise
 #mssql-django
 django-pyodbc-azure
