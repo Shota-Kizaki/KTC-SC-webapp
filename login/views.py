@@ -8,3 +8,10 @@ urlpatterns = [
         ),
         name='login'),
 ]
+from django.shortcuts import render
+
+def top(request):
+    # ポータルサイトのトップぺージを表示する
+    
+    # top.htmlをレンダリング
+    return render(request, 'login/top.html')
