@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-q5r3_!j5x+pogiqxjwwn$wh$a+@$_w87uy116rn7!)t_93a#d9
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+#メールアドレス認証に変更する設定
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
 
 # Application definition
 
@@ -49,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'login.middleware.LoginRequiredMiddleware' ,
 ]
 
 ROOT_URLCONF = 'chatbot_project.urls'
@@ -124,4 +127,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = '/'    # 追加
+LOGIN_REDIRECT_URL = 'login:top'    # 追加

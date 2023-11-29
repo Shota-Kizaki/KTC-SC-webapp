@@ -18,6 +18,6 @@ from django.contrib import admin
 from django.urls import path, include    # includeを追加でimport
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('',include('home.urls')),    # appアプリケーションのurls.pyを読み込むように追加
+    path('',include('home.urls')),    # appアプリケーションのurls.pyを読み込むように追加
     path('', include('login.urls')),    # appアプリケーションのurls.pyを読み込むように追加
 ]

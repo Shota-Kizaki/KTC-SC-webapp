@@ -2,12 +2,19 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>LoginViewテスト</title>
+    <title>SCsystem</title>
 </head>
 <body>
-    <h2>kimoto</h2>
+    <h2>SCsystem</h2>
     {% for user in users %}
     <li>{{ user.username }}</li>
     {% endfor %}
+    {% if user.is_authenticated %}
+    <h3>ログインしました</h3>
+    <a href="{% url 'home' %}">管理ページへ</a>
+    <a href="{% url 'logout' %}">ログアウト</a>
+    {% else %}
+    <a href="{% url 'login' %}">ログイン</a>
+    {% endif %}
 </body>
 </html>
