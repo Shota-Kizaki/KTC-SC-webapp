@@ -1,0 +1,34 @@
+{% load static %}
+{% load in_group %}
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>トップページ</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="icon"href="{% static 'favicon.ico' %}">
+</head>
+<body>
+    <h2>SCsystem</h2>
+    {% for user in users %}
+    <li>{{ user.username }}</li>
+    {% endfor %}
+    {% if user.is_authenticated %} 
+    <!--ログインしているかどうかを判定-->
+    <h3>ようこそ</h3> 
+        {% if user|in_group:"管理者" %}
+        <!-- 管理者というグループに所属するユーザ用のリンク -->
+        <h2>管理者用ページ</h2>
+        <a href="{% url 'chat' %}">chatページへ</a>
+        <a href="{% url 'logout' %}">ログアウト</a>
+        <!--ここに管理画面のhtmlを作成-->
+        {% else %}
+        <!-- その他のユーザ用のリンク -->
+        <a href="{% url 'chat' %}">chatページへ</a>
+        <a href="{% url 'logout' %}">ログアウト</a>
+        {% endif %}
+    {% else %}
+    <a href="{% url 'login' %}">ログイン</a>
+    {% endif %}
+</body>
+</html>

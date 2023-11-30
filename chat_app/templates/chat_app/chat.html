@@ -1,0 +1,39 @@
+{% load static %}
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="icon"href="{% static 'favicon.ico' %}">
+</head>
+  <body>
+    {% if user.is_authenticated %}
+    <div class="container">
+      <div class="mt-5">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="question" class="form-label">Question</label>
+            <input type="text" class="form-control" id="question" name="question">
+          </div>
+          <button type="submit" class="btn btn-primary">Ask</button>
+        </form>
+      </div>
+      <div class="mt-5">
+        {% for chat_log in chat_logs %}
+        <div class="mb-3">
+          <div><strong>Q:</strong> {{ chat_log.question }}</div>
+          <div><strong>A:</strong> {{ chat_log.answer }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <a href="{% url 'top' %}">トップページへ</a>
+    <a href="{% url 'logout' %}">ログアウト</a>
+    {% else %}
+    <a href="{% url 'login' %}">ログインしてください。</a>
+    {% endif %}
+    
+  </body>
+</html>
