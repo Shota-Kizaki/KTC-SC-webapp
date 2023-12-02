@@ -15,11 +15,12 @@
     {% endfor %}
     {% if user.is_authenticated %} 
     <!--ログインしているかどうかを判定-->
-    <h3>ようこそ</h3> 
+    <p>{{ user.username }}さんようこそ。</p>
         {% if user|in_group:"管理者" %}
         <!-- 管理者というグループに所属するユーザ用のリンク -->
         <h2>管理者用ページ</h2>
         <a href="{% url 'chat' %}">chatページへ</a>
+        <a href="{% url 'signup' %}">ユーザー登録</a>
         <a href="{% url 'logout' %}">ログアウト</a>
         <!--ここに管理画面のhtmlを作成-->
         {% else %}

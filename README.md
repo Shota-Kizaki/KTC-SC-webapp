@@ -1,28 +1,44 @@
-# Deploy a Python (Django) web app to Azure App Service - Sample Application
+# KTC-SC-webapp
 
-This is the sample Django application for the Azure Quickstart [Deploy a Python (Django or Flask) web app to Azure App Service](https://docs.microsoft.com/en-us/azure/app-service/quickstart-python).  For instructions on how to create the Azure resources and deploy the application to Azure, refer to the Quickstart article.
+このリポジトリは、langchainとAzure OpenAIを使用したチャットbotの管理と実際にチャットができるwebサイトです。django
 
-Sample applications are available for the other frameworks here:
+## 概要
+このプロジェクトは、langchainとAzure OpenAIを組み合わせて作成されたチャットbotの管理と、実際にチャットを行うためのWebサイトです。Djangoフレームワークを使用して開発されています。
 
-* Flask [https://github.com/Azure-Samples/msdocs-python-flask-webapp-quickstart](https://github.com/Azure-Samples/msdocs-python-flask-webapp-quickstart)
-* FastAPI [https://github.com/Azure-Samples/msdocs-python-fastapi-webapp-quickstart](https://github.com/Azure-Samples/msdocs-python-fastapi-webapp-quickstart)
+## インストール
+以下の手順に従って、プロジェクトをローカル環境にセットアップしてください。
 
-If you need an Azure account, you can [create one for free](https://azure.microsoft.com/en-us/free/).
+1. リポジトリをクローンします。
+    ```shell
+    git clone https://github.com/your-username/KTC-SC-webapp.git
+    ```
 
-## For local development
+2. 仮想環境を作成し、必要なパッケージをインストールします。
+    ```shell
+    cd KTC-SC-webapp
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
-Fill in a secret value in the `.env` file.
+3. データベースをマイグレーションします。
+    ```shell
+    python manage.py migrate
+    ```
 
-For local development, use this random string as an appropriate value:
+4. サーバーを起動します。
+    ```shell
+    python manage.py runserver
+    ```
 
-```shell
-SECRET_KEY=123abc
-```
+5. ブラウザで `http://localhost:8000` にアクセスして、Webサイトを利用できます。
 
-## When you deploy to Azure
+## 使用方法
+1. Webサイトにアクセスすると、チャットbotの管理画面が表示されます。
+2. チャットbotの設定やトレーニングデータの管理を行います。
+3. チャットを行うには、Webサイト上でチャットボットと対話することができます。
 
-For deployment to production, create an app setting, `SECRET_KEY`. Use this command to generate an appropriate value:
+## ライセンス
+このプロジェクトは [MITライセンス](LICENSE)のもとで公開されています。
 
-```shell
-python -c 'import secrets; print(secrets.token_hex())'
-```
+詳細な情報や貢献方法については、[CONTRIBUTING.md](CONTRIBUTING.md)を参照してください。

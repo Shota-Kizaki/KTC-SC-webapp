@@ -9,5 +9,6 @@ urlpatterns = [
     path('login/', LoginView.as_view(redirect_authenticated_user=True,template_name='login/login.html'),name='login'),
     path('', top, name='top'),
     path('logout/', LogoutView.as_view(template_name='login/logout.html'), name='logout'),
+    path('signup/', views.SignUpView.as_view(), name="signup"),
     path('chat_app/', chat, name="chat"),  # homeビューへのリンクを追加
 ]
