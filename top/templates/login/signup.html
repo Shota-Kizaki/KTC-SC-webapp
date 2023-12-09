@@ -1,4 +1,5 @@
 {% load static %}
+{% load in_group %}
 <!doctype html>
 <html lang="ja">
 <head>
@@ -12,6 +13,11 @@
         <div class="col-sm-6">
             <br>
             <h1>ユーザ登録</h1>
+            {% for user in users %}
+            {% endfor %}
+            {% if user.is_authenticated %} 
+            <!--ログインしているかどうかを判定-->
+            {% if user|in_group:"管理者" %}
             <form method="POST">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
@@ -23,6 +29,10 @@
                 {% endfor %}
                 <button type="submit">登録</button>
             </form>
+            {% endif %}
+            {% else %}
+            <a href="{% url 'login' %}">管理者アカウントでログインしてください。</a>
+            {% endif %}
         </div>
     </div>
 </body>

@@ -27,11 +27,13 @@ def top(request):
 class SignUpView(CreateView):
     form_class = SignUpForm
     template_name = "login/signup.html"
-    success_url = reverse_lazy("top")
+    success_url = reverse_lazy("login")
+    
 
     def form_valid(self, form):
         user = form.save()
-        group = form.cleaned_data['group']
-        group.user_set.add(user)  # 選択されたグループにユーザーを追加
-        login(self.request, user)
+        group = form.cleaned_data.get('group')
+        if group:
+            group.user_set.add(user)  # 選択されたグループにユーザーを追加
+        # login(self.request, user)  # この行をコメントアウトまたは削除
         return HttpResponseRedirect(self.get_success_url())
