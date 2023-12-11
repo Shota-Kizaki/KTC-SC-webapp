@@ -2,4 +2,5 @@ from django.urls import path
 from . import views
 urlpatterns = [
     path('chat_app/', views.chat, name='chat'),
+    path('logs/', views.log_list, name='log_list'),
 ]

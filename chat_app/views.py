@@ -3,7 +3,10 @@ from .models import ChatLog
 import os
 from dotenv import load_dotenv
 load_dotenv(override=True)
+from django.contrib.auth.models import User
+from django.utils.dateparse import parse_date
 
+'''
 from langchain.chains import RetrievalQA
 
 from langchain.chat_models import AzureChatOpenAI
@@ -66,3 +69,55 @@ def chat(request):
     chat_logs = ChatLog.objects.order_by('-created_at')
     return render(request, 'chat_app/chat.html', {'chat_logs': chat_logs})
 
+'''
+
+'''
+こんな感じで動く
+
+def chat(request):
+    if request.method == 'POST':
+        question = request.POST.get('question')
+
+        result = question + "の回答です。"
+
+        ChatLog.objects.create(question=question, answer=result)
+    chat_logs = ChatLog.objects.order_by('-created_at')
+    return render(request, 'chat_app/chat.html', {'chat_logs': chat_logs})
+'''
+
+#チャット画面を表示する
+from .my_app.app import chat as app_chat
+def chat(request):
+    if request.method == 'POST' and request.POST.get('question'):
+        question = request.POST.get('question')
+        if question:  # 質問がある場合のみ処理
+            result = app_chat(question)  # app.pyのchat関数を呼び出す
+            ChatLog.objects.create(user=request.user, question=question, answer=result)
+
+    chat_logs = ChatLog.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'chat_app/chat.html', {'chat_logs': chat_logs})
+
+#ログを表示する
+def log_list(request):
+    logs = ChatLog.objects.all()
+
+    # ユーザーによるフィルタリング
+    user_id = request.GET.get('user')
+    if user_id:
+        logs = logs.filter(user_id=user_id)
+
+    # 日付によるフィルタリング
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date:
+        start_date = parse_date(start_date)
+        logs = logs.filter(created_at__date__gte=start_date)
+    if end_date:
+        end_date = parse_date(end_date)
+        logs = logs.filter(created_at__date__lte=end_date)
+
+    context = {
+        'logs': logs,
+        'users': User.objects.all(),
+    }
+    return render(request, 'chat_app/log_list.html', context)

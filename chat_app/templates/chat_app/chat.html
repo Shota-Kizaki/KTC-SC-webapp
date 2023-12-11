@@ -21,10 +21,10 @@
         </form>
       </div>
       <div class="mt-5">
-        {% for chat_log in chat_logs %}
+        {% for log in chat_logs %}
         <div class="mb-3">
-          <div><strong>Q:</strong> {{ chat_log.question }}</div>
-          <div><strong>A:</strong> {{ chat_log.answer }}</div>
+          <div><strong>Q:</strong> {{ log.question }}</div>
+          <div><strong>A:</strong> {{ log.answer }}</div>
         </div>
         {% endfor %}
       </div>

@@ -15,6 +15,7 @@ urlpatterns = [
     path('login/',LoginView.as_view(redirect_authenticated_user=True,template_name='login/login.html'),name='login'),
     path('logout/', LogoutView.as_view(template_name='login/logout.html'), name="logout"),   # 追加
     path('chat/', include('chat_app.urls'),name="chat"),    # 追加
+    path('logs/', include('chat_app.urls'),name='chat_logs'),    # 追加
 ]
 
 def top(request):
@@ -37,3 +38,4 @@ class SignUpView(CreateView):
             group.user_set.add(user)  # 選択されたグループにユーザーを追加
         # login(self.request, user)  # この行をコメントアウトまたは削除
         return HttpResponseRedirect(self.get_success_url())
+    

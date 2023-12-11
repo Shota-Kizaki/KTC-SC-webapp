@@ -1,3 +1,6 @@
-from django.contrib import admin
+# my_app/admin.py
 
-# Register your models here.
+from django.contrib import admin
+from .models import ChatLog
+
+admin.site.register(ChatLog)

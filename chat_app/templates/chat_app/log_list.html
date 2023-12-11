@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="icon"href="{% static 'favicon.ico' %}">
+</head>
+  <body>
+    {% if user.is_authenticated %}
+    <div class="container">
+      <div class="mt-5">
+        <form method="get">
+            <select name="user">
+                <option value="">ユーザーを選択</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="start_date">
+            <input type="date" name="end_date">
+            <button type="submit">検索</button>
+        </form>
+        
+        <table>
+            <tr>
+                <th>日付</th>
+                <th>ユーザー名</th>
+                <th>質問</th>
+                <th>回答</th>
+            </tr>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.created_at }}</td>
+                <td>{{ log.user.username }}</td>
+                <td>{{ log.question }}</td>
+                <td>{{ log.answer }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    <a href="{% url 'top' %}">トップページへ</a>
+    <a href="{% url 'logout' %}">ログアウト</a>
+    {% else %}
+    <a href="{% url 'login' %}">ログインしてください。</a>
+    {% endif %}
+    
+  </body>
+</html>
