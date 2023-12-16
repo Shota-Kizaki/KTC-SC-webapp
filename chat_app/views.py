@@ -121,3 +121,54 @@ def log_list(request):
         'users': User.objects.all(),
     }
     return render(request, 'chat_app/log_list.html', context)
+
+
+#ダウンロード機能（実装予定）
+
+import openpyxl
+from django.http import HttpResponse
+from .models import ChatLog
+from django.utils.timezone import make_naive, get_default_timezone
+from django.utils.dateparse import parse_date
+from .templatetags.custom_filters import group_required
+
+@group_required('管理者')
+def download_logs(request):
+    # フィルタリング条件の取得
+    user_id = request.GET.get('user')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    # ログデータのフィルタリング
+    logs = ChatLog.objects.all().select_related('user')
+    if user_id:
+        logs = logs.filter(user_id=user_id)
+    if start_date:
+        start_date = parse_date(start_date)
+        logs = logs.filter(created_at__date__gte=start_date)
+    if end_date:
+        end_date = parse_date(end_date)
+        logs = logs.filter(created_at__date__lte=end_date)
+
+    # 新しいワークブックの作成
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Logs"
+
+    # ヘッダー行の追加
+    columns = ["日付", "ユーザー名", "質問", "回答"]
+    ws.append(columns)
+
+    # ログデータの追加
+    for log in logs:
+        naive_datetime = make_naive(log.created_at, timezone=get_default_timezone())
+        ws.append([naive_datetime, log.user.username, log.question, log.answer])
+
+    # レスポンスとしてExcelファイルを返す
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=logs.xlsx'
+    wb.save(response)
+
+    return response
+
+    

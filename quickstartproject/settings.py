@@ -28,8 +28,8 @@ SECRET_KEY = '1234567890'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['.ktc-sc.azurewebsites.net','.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://*.ktc-sc.azurewebsites.net/','http://*.127.0.0.1:8000/']
 
 # Application definition
 
