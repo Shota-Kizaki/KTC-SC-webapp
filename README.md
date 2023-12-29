@@ -1,6 +1,8 @@
 # KTC-SC-webapp
 
-このリポジトリは、langchainとAzure OpenAIを使用したチャットbotの管理と実際にチャットができるwebサイトです。django
+このリポジトリは、langchainとAzure OpenAIを使用したチャットbotの管理と実際にチャットができるwebサイトです。
+
+https://ktc-sc.azurewebsites.net/
 
 ## 概要
 このプロジェクトは、langchainとAzure OpenAIを組み合わせて作成されたチャットbotの管理と、実際にチャットを行うためのWebサイトです。Djangoフレームワークを使用して開発されています。
