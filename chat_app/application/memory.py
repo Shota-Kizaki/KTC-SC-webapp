@@ -25,8 +25,3 @@ def get_contexts(user_id):
                     # print("Question: {}, Answer: {}".format(row.question, row.answer))
                 row = cursor.fetchone()
     return contexts
-
-# contexts = get_contexts(1)
-# for context in contexts:
-#     text = context["question"]
-# print(text)
