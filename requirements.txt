@@ -3,9 +3,9 @@ whitenoise
 mssql-django
 django-pyodbc-azure
 python-dotenv==1.0.0
-openai==0.28.1
 langchain==0.0.350
-#django-glrm
+openai==0.28.0
+pydantic==2.5.2
 openpyxl
 pyodbc
 sqlalchemy

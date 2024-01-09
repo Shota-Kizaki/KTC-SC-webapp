@@ -2,7 +2,8 @@ from django.shortcuts import render
 from .models import ChatLog
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
-#from .application.src.agents.main import run
+from .application import agents
+from langchain.memory import ConversationBufferMemory
 from django.contrib.auth.decorators import login_required
 import os
 from dotenv import load_dotenv
@@ -22,7 +23,11 @@ def chat(request):
         input_text = request.POST.get('question')
         user_id = request.user.id  # ログイン中のユーザーのIDを取得
         if input_text:  # 質問がある場合のみ処理
-            #result = run(input_text, user_id)  # run関数を呼び出す
+            # run関数を呼び出す
+            memory = ConversationBufferMemory()
+            memory.save_context({"input": "hi"}, {"output": "whats up"})
+            agent = agents.MainAgent()
+            result = agent.run(input_text)
             ChatLog.objects.create(user=request.user, question=input_text, answer=result)
 
     chat_logs = ChatLog.objects.filter(user=request.user).order_by('-created_at')
