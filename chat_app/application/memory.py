@@ -14,14 +14,19 @@ def get_contexts(user_id):
         with conn.cursor() as cursor:
             cursor.execute(f"SELECT TOP (3) id, CONVERT(datetime, created_at) as created_at, question, answer, user_id FROM [dbo].[chat_app_chatlog] WHERE user_id =  {user_id}  ORDER BY created_at DESC")
             row = cursor.fetchone()
-            contexts_input = []
-            contexts_output = []
+            contexts = []
             while row:
                 # 存在する属性にアクセスする前にチェック
                 if hasattr(row, 'question') and hasattr(row, 'answer'):
-                    contexts_input.insert(0, row.question)
-                    contexts_output.insert(0, row.answer)
+                    contexts.insert(0, {
+                        'question': row.question,
+                        'answer': row.answer
+                    })
                     # print("Question: {}, Answer: {}".format(row.question, row.answer))
                 row = cursor.fetchone()
-            contexts = [contexts_input, contexts_output]
     return contexts
+
+# contexts = get_contexts(1)
+# for context in contexts:
+#     text = context["question"]
+# print(text)

@@ -24,10 +24,11 @@ def chat(request):
         user_id = request.user.id  # ログイン中のユーザーのIDを取得
         if input_text:  # 質問がある場合のみ処理
             # run関数を呼び出す
-            memory = ConversationBufferMemory(memory_key="chat_history")
+            memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
             contexts = get_contexts(user_id)
-            memory.save_context(contexts["contexts_input"], contexts["contexts_output"])
-            agent = agents.MainAgent(memory=memory)
+            for context in contexts:
+                memory.save_context({"input": context["question"]}, {"output": context["answer"]})
+            agent = agents.MainAgent(memory=memory, verbose=True)
             result = agent.run(input_text)
             ChatLog.objects.create(user=request.user, question=input_text, answer=result)
 
