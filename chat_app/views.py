@@ -1,18 +1,18 @@
-from django.shortcuts import render
-from .models import ChatLog
-from django.contrib.auth.models import User
-from django.utils.dateparse import parse_date
-from .application import agents
-from langchain.memory import ConversationBufferMemory
-from django.contrib.auth.decorators import login_required
 import os
 from dotenv import load_dotenv
-
+from django.shortcuts import render
 import openpyxl
 from django.http import HttpResponse
 from django.utils.timezone import make_naive, get_default_timezone
 from django.utils.dateparse import parse_date
 from .templatetags.custom_filters import group_required
+from chat_app.models import ChatLog
+from django.contrib.auth.models import User
+from django.utils.dateparse import parse_date
+from .application.memory import get_contexts
+from langchain.memory import ConversationBufferMemory
+from django.contrib.auth.decorators import login_required
+from .application import agents
 
 load_dotenv(override=True)
 
@@ -24,9 +24,10 @@ def chat(request):
         user_id = request.user.id  # ログイン中のユーザーのIDを取得
         if input_text:  # 質問がある場合のみ処理
             # run関数を呼び出す
-            memory = ConversationBufferMemory()
-            memory.save_context({"input": "hi"}, {"output": "whats up"})
-            agent = agents.MainAgent()
+            memory = ConversationBufferMemory(memory_key="chat_history")
+            contexts = get_contexts(user_id)
+            memory.save_context(contexts["contexts_input"], contexts["contexts_output"])
+            agent = agents.MainAgent(memory=memory)
             result = agent.run(input_text)
             ChatLog.objects.create(user=request.user, question=input_text, answer=result)
 
