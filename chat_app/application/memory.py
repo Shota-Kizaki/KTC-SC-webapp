@@ -19,7 +19,6 @@ def get_contexts(user_id):
             while row:
                 # 存在する属性にアクセスする前にチェック
                 if hasattr(row, 'question') and hasattr(row, 'answer'):
-
                     contexts_input.insert(0, row.question)
                     contexts_output.insert(0, row.answer)
                     # print("Question: {}, Answer: {}".format(row.question, row.answer))
