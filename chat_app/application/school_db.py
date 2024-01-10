@@ -57,7 +57,7 @@ def insert_data():
 def drop_table():
     with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD=' + password) as conn:
         with conn.cursor() as cursor:
-            cursor.execute('DROP TABLE test1')
+            cursor.execute('DROP TABLE class_data')
             cursor.commit()
 
 # drop_table()
