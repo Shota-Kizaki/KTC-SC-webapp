@@ -38,7 +38,7 @@ def create_table():  # テーブル作成関数
                 '''
                     CREATE TABLE class_data
                     (
-                        data_id int primary key NOT NULL,
+                        id int IDENTITY(1,1) PRIMARY KEY,
                         class_name NVARCHAR(20) NOT NULL,
                         data NVARCHAR(MAX) NOT NULL,
                     )
@@ -46,14 +46,14 @@ def create_table():  # テーブル作成関数
             cursor.commit()
 
 
-def insert_data(data_id, class_name, data):  # データ挿入関数
+def insert_data(class_name, data):  # データ挿入関数
     with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD=' + password) as conn:
         with conn.cursor() as cursor:
             cursor.execute(
                 '''
-                    INSERT INTO class_data (data_id, class_name, data)
-                    VALUES (?, ?, ?)
-                ''', data_id, class_name, data)
+                    INSERT INTO class_data (class_name, data)
+                    VALUES (?, ?)
+                ''', class_name, data)
             cursor.commit()
 
 
@@ -66,9 +66,9 @@ def select_data():  # データ取得関数
             contexts = []
             while row:
                 # 存在する属性にアクセスする前にチェック
-                if hasattr(row, 'data_id') and hasattr(row, 'class_name') and hasattr(row, 'data'):
+                if hasattr(row, 'id') and hasattr(row, 'class_name') and hasattr(row, 'data'):
                     contexts.append({
-                        'data_id': row.data_id,
+                        'id': row.id,
                         'class_name': row.class_name,
                         'data': row.data
                     })
@@ -87,7 +87,7 @@ def drop_table():
 # create_table()
 # drop_table()
 
-# insert_data(data_id=1, class_name='Python機械学習', data='Python機械学習のテストデータです')
+# insert_data(class_name='Python機械学習', data='Python機械学習のテストデータです')
 
-data = select_data()
-print(data)
+# data = select_data()
+# print(data)
