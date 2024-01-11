@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import pyodbc
 
+
 load_dotenv(override=True)
 
 server = os.environ.get('db_host')
@@ -30,7 +31,7 @@ def get_contexts(user_id):
     return contexts
 
 
-def create_table(): # テーブル作成関数
+def create_table():  # テーブル作成関数
     with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD=' + password) as conn:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -38,21 +39,43 @@ def create_table(): # テーブル作成関数
                     CREATE TABLE class_data
                     (
                         data_id int primary key NOT NULL,
-                        class_name VARCHAR(20) NOT NULL,
-                        data text NOT NULL,
+                        class_name NVARCHAR(20) NOT NULL,
+                        data NVARCHAR(MAX) NOT NULL,
                     )
                 ''')
             cursor.commit()
 
-create_table()
 
-
-def insert_data():
+def insert_data(data_id, class_name, data):  # データ挿入関数
     with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD=' + password) as conn:
         with conn.cursor() as cursor:
-            cursor.execute('')
+            cursor.execute(
+                '''
+                    INSERT INTO class_data (data_id, class_name, data)
+                    VALUES (?, ?, ?)
+                ''', data_id, class_name, data)
+            cursor.commit()
 
-# insert_data()
+
+def select_data():  # データ取得関数
+    with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD=' + password) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                f'SELECT TOP (1000) * FROM [dbo].[class_data]')
+            row = cursor.fetchone()
+            contexts = []
+            while row:
+                # 存在する属性にアクセスする前にチェック
+                if hasattr(row, 'data_id') and hasattr(row, 'class_name') and hasattr(row, 'data'):
+                    contexts.append({
+                        'data_id': row.data_id,
+                        'class_name': row.class_name,
+                        'data': row.data
+                    })
+                    # print("Question: {}, Answer: {}".format(row.question, row.answer))
+                row = cursor.fetchone()
+            return contexts
+
 
 def drop_table():
     with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD=' + password) as conn:
@@ -60,4 +83,11 @@ def drop_table():
             cursor.execute('DROP TABLE class_data')
             cursor.commit()
 
+
+# create_table()
 # drop_table()
+
+# insert_data(data_id=1, class_name='Python機械学習', data='Python機械学習のテストデータです')
+
+data = select_data()
+print(data)
