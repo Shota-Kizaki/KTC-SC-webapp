@@ -12,4 +12,5 @@ urlpatterns = [
     path('signup/', views.SignUpView.as_view(), name="signup"),
     path('chat_app/', chat, name="chat"),  # homeビューへのリンクを追加
     path('logs/', log_list, name='chat_logs'),
+    path('database/', views.add_classdata, name='database'),
 ]

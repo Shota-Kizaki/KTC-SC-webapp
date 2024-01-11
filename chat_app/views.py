@@ -61,7 +61,7 @@ def log_list(request):
     return render(request, 'chat_app/log_list.html', context)
 
 
-#ダウンロード機能（実装予定）
+#ダウンロード機能
 
 
 @group_required('管理者')

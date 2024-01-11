@@ -1,0 +1,48 @@
+{% load static %}
+{% load in_group %}
+
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>データベース</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">データベース</h1>
+
+        <!-- ユーザー認証チェック -->
+        {% if user.is_authenticated %}
+            <p>{{ user.username }}さんようこそ。</p>
+
+            <!-- 管理者グループのユーザーのみに表示する内容 -->
+            {% if user|in_group:"管理者" %}
+                <div class="mt-4">
+                    <h2>Class Dataの追加</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">送信</button>
+                    </form>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- 未認証ユーザー向けのコンテンツ -->
+            <a href="{% url 'login' %}" class="btn btn-primary mt-4">ログイン</a>
+        {% endif %}
+    </div>
+
+    <!-- Djangoメッセージのポップアップ表示 -->
+    {% if messages %}
+    <script type="text/javascript">
+        window.onload = function() {
+            {% for message in messages %}
+            alert("{{ message }}");
+            {% endfor %}
+        };
+    </script>
+    {% endif %}
+</body>
+</html>
