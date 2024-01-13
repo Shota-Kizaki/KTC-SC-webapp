@@ -3,5 +3,5 @@ from django.contrib.auth.models import User
 
 class ClassData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    classname = models.TextField()
     data = models.TextField()
+    metadata = models.TextField()

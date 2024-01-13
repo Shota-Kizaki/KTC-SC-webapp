@@ -14,4 +14,4 @@ class SignUpForm(UserCreationForm):
 class ClassDataForm(forms.ModelForm):
     class Meta:
         model = ClassData
-        fields = ['classname', 'data']
+        fields = ['data', 'metadata']

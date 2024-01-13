@@ -45,13 +45,19 @@ class SignUpView(CreateView):
 @login_required
 
 
+    
 def add_classdata(request):
     if request.method == 'POST':
         form = ClassDataForm(request.POST)
         if form.is_valid():
+            # `metadata` フィールドのデータを取得し、Pythonの辞書に変換
+            metadata_str = str({'class_data' : form.cleaned_data['metadata']})
+            instance = form.save(commit=False)
+            instance.metadata = metadata_str
+            form=instance
             form.save()
             messages.success(request, '登録に成功しました！')  # 成功メッセージを追加
     else:
+        messages.success(request, '登録に失敗しましたもう一度やり直してください。')
         form = ClassDataForm()
-
     return render(request, "login/database.html", {'form': form})
