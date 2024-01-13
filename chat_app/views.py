@@ -16,6 +16,8 @@ from .application import agents
 
 load_dotenv(override=True)
 
+
+
 #チャット画面を表示する
 @login_required
 def chat(request):
@@ -32,7 +34,8 @@ def chat(request):
             result = agent.run(input_text)
             ChatLog.objects.create(user=request.user, question=input_text, answer=result)
 
-    chat_logs = ChatLog.objects.filter(user=request.user).order_by('-created_at')
+    # 新しいものが下に表示されるようにクエリを変更
+    chat_logs = ChatLog.objects.filter(user=request.user).order_by('created_at')
     return render(request, 'chat_app/chat.html', {'chat_logs': chat_logs})
 
 #ログを表示する

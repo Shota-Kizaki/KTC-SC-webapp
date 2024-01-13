@@ -5,35 +5,130 @@
     <meta charset="UTF-8">
     <title>ChatGPT</title>
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <link rel="icon"href="{% static 'favicon.ico' %}">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <style>
+        /* 既存のスタイル */
+        .chat-question {
+            text-align: left;
+        }
+        .chat-answer {
+            text-align: right;
+        }
+        .chat-card {
+            margin-bottom: 10px;
+        }
+        /* チャット入力欄のスタイル */
+        .chat-input {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background-color: #f8f9fa; /* 薄い背景色 */
+            border-top: 1px solid #e9ecef; /* 上部の境界線 */
+        }
+        .chat-input .form-label {
+            font-weight: bold;
+        }
+        .chat-input .btn-primary {
+            margin-left: 10px;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            background-color: #f8f9fa; /* 薄い背景色 */
+            border-bottom: 1px solid #e9ecef; /* 下部の境界線 */
+            z-index: 1030; /* チャット入力欄の上に表示 */
+        }
+        .main-content {
+            padding-top: 70px; /* ヘッダーの高さに応じて調整 */
+            padding-bottom: 70px; /* フッターの高さに応じて調整 */
+        }
+        .footer {
+            padding: 15px;
+            background-color: #f8f9fa; /* 薄い背景色 */
+            border-top: 1px solid #e9ecef; /* 上部の境界線 */
+        }
+        @media (max-width: 768px) {
+            .chat-input .btn-primary {
+                margin-top: 10px; /* スマホ表示ではボタンを入力欄から離す */
+                width: 100%; /* ボタンの幅を調整 */
+            }
+            .chat-input .form-label {
+                display: block; /* スマホ表示ではラベルをブロック要素にする */
+            }
+            .chat-input .form-control {
+                margin-top: 10px; /* 入力欄のマージン調整 */
+            }
+        }
+    </style>
 </head>
-  <body>
+<header>
+<div class="header">
+  <h1 class="mt-4">京都テック専用ChatGPT</h1>
+  {% if user.is_authenticated %}
+  <p>{{ user.username }}さんようこそ。</p>
+  {% else %}
+  <a href="{% url 'login' %}" class="btn btn-primary mt-4">ログインしてください。</a>
+  {% endif %}
+</div>
+</header>
+<body>
     {% if user.is_authenticated %}
-    <div class="container">
-      <div class="mt-5">
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label for="question" class="form-label">Question</label>
-            <input type="text" class="form-control" id="question" name="question">
+    <div class="container-fluid d-flex flex-column h-100 main-content">
+          <div class="row flex-grow-1 overflow-auto">
+              <div class="col">
+                  {% for log in chat_logs %}
+                      <div class="row mb-3">
+                          <div class="col-10 offset-1 chat-card">
+                              <div class="card">
+                                  <div class="card-body chat-question">
+                                      <p class="card-text"><strong>Q:</strong> {{ log.question | linebreaksbr }}</p>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="col-10 offset-1 chat-card">
+                              <div class="card bg-light">
+                                  <div class="card-body chat-answer">
+                                      <p class="card-text"><strong>A:</strong> {{ log.answer | linebreaksbr }}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  {% endfor %}
+              </div>
           </div>
-          <button type="submit" class="btn btn-primary">Ask</button>
-        </form>
-      </div>
-      <div class="mt-5">
-        {% for log in chat_logs %}
-        <div class="mb-3">
-          <div><strong>A:</strong> {{ log.answer | linebreaksbr }}</div>
-          <div><strong>Q:</strong> {{ log.question | linebreaksbr }}</div>
+        <div class="chat-input">
+            <form method="post" id="chatForm">
+                {% csrf_token %}
+                <div class="mb-3 d-flex">
+                    <label for="question" class="form-label me-2">Question:</label>
+                    <input type="text" class="form-control flex-grow-1" id="question" name="question">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Ask</button>
+                    <span id="loading" style="display: none;">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        考え中...
+                    </span>
+                </div>
+            </form>
         </div>
-        {% endfor %}
-      </div>
-    </div>
-    <a href="{% url 'top' %}">トップページへ</a>
-    <a href="{% url 'logout' %}">ログアウト</a>
-    {% else %}
-    <a href="{% url 'login' %}">ログインしてください。</a>
     {% endif %}
-    
-  </body>
+          <script>
+            document.getElementById('chatForm').addEventListener('submit', function() {
+                document.getElementById('submitBtn').style.display = 'none'; // 送信ボタンを隠す
+                document.getElementById('loading').style.display = 'inline-block'; // ローディングインジケーターを表示
+            });
+          </script>
+        </div>
+</body>
+<footer class="footer">
+  <div class="text-center">
+      <a href="{% url 'top' %}">トップページへ</a>
+      <a href="{% url 'chat_logs' %}">ログ一覧ページへ</a>
+      <a href="{% url 'logout' %}">ログアウト</a>
+  </div>
+</footer>
 </html>
