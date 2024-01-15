@@ -39,12 +39,13 @@
                             <div class="alert alert-danger">{{ form.data.errors }}</div>
                         {% endif %}
                     </div>
-                    
                     <button type="submit" class="btn btn-primary">送信</button>
                 </form>
+                <a href="{% url 'top' %}">トップページへ</head></a>
             </div>
             {% endif %}
         {% else %}
+            <a href="{% url 'top' %}">トップページへ</head></a>
             <!-- 未認証ユーザー向けのコンテンツ -->
             <a href="{% url 'login' %}" class="btn btn-primary mt-4">ログイン</a>
         {% endif %}

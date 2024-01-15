@@ -57,7 +57,7 @@ def add_classdata(request):
             form=instance
             form.save()
             messages.success(request, '登録に成功しました！')  # 成功メッセージを追加
+            form = ClassDataForm()  # フォームを新たに作り直す
     else:
-        messages.success(request, '登録に失敗しましたもう一度やり直してください。')
         form = ClassDataForm()
     return render(request, "login/database.html", {'form': form})

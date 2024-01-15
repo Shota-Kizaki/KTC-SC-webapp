@@ -1,134 +1,109 @@
-{% load static %}
 <!doctype html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ChatGPT</title>
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>京都テック専用ChatGPT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <style>
-        /* 既存のスタイル */
-        .chat-question {
-            text-align: left;
+        body {
+            padding-bottom: 70px; /* Space for fixed footer */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-logs {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-bottom: 70px; /* Additional space for the footer */
+        }
+        .chat-question, .chat-answer {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
         }
         .chat-answer {
+            background-color: #e2e6ea;
             text-align: right;
         }
-        .chat-card {
-            margin-bottom: 10px;
-        }
-        /* チャット入力欄のスタイル */
-        .chat-input {
+        .fixed-bottom {
             position: fixed;
             bottom: 0;
             left: 0;
-            right: 0;
-            padding: 15px;
-            background-color: #f8f9fa; /* 薄い背景色 */
-            border-top: 1px solid #e9ecef; /* 上部の境界線 */
-        }
-        .chat-input .form-label {
-            font-weight: bold;
-        }
-        .chat-input .btn-primary {
-            margin-left: 10px;
-        }
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 10px 15px;
-            background-color: #f8f9fa; /* 薄い背景色 */
-            border-bottom: 1px solid #e9ecef; /* 下部の境界線 */
-            z-index: 1030; /* チャット入力欄の上に表示 */
-        }
-        .main-content {
-            padding-top: 70px; /* ヘッダーの高さに応じて調整 */
-            padding-bottom: 70px; /* フッターの高さに応じて調整 */
+            width: 100%;
+            z-index: 1030; /* Ensure it's above other elements */
         }
         .footer {
-            padding: 15px;
-            background-color: #f8f9fa; /* 薄い背景色 */
-            border-top: 1px solid #e9ecef; /* 上部の境界線 */
-        }
-        @media (max-width: 768px) {
-            .chat-input .btn-primary {
-                margin-top: 10px; /* スマホ表示ではボタンを入力欄から離す */
-                width: 100%; /* ボタンの幅を調整 */
-            }
-            .chat-input .form-label {
-                display: block; /* スマホ表示ではラベルをブロック要素にする */
-            }
-            .chat-input .form-control {
-                margin-top: 10px; /* 入力欄のマージン調整 */
-            }
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
         }
     </style>
 </head>
-<header>
-<div class="header">
-  <h1 class="mt-4">京都テック専用ChatGPT</h1>
-  {% if user.is_authenticated %}
-  <p>{{ user.username }}さんようこそ。</p>
-  {% else %}
-  <a href="{% url 'login' %}" class="btn btn-primary mt-4">ログインしてください。</a>
-  {% endif %}
-</div>
-</header>
 <body>
-    {% if user.is_authenticated %}
-    <div class="container-fluid d-flex flex-column h-100 main-content">
-          <div class="row flex-grow-1 overflow-auto">
-              <div class="col">
-                  {% for log in chat_logs %}
-                      <div class="row mb-3">
-                          <div class="col-10 offset-1 chat-card">
-                              <div class="card">
-                                  <div class="card-body chat-question">
-                                      <p class="card-text"><strong>Q:</strong> {{ log.question | linebreaksbr }}</p>
-                                  </div>
-                              </div>
-                          </div>
-                          <div class="col-10 offset-1 chat-card">
-                              <div class="card bg-light">
-                                  <div class="card-body chat-answer">
-                                      <p class="card-text"><strong>A:</strong> {{ log.answer | linebreaksbr }}</p>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  {% endfor %}
-              </div>
-          </div>
-        <div class="chat-input">
-            <form method="post" id="chatForm">
-                {% csrf_token %}
-                <div class="mb-3 d-flex">
-                    <label for="question" class="form-label me-2">Question:</label>
-                    <input type="text" class="form-control flex-grow-1" id="question" name="question">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Ask</button>
-                    <span id="loading" style="display: none;">
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        考え中...
-                    </span>
+    <header class="py-3 mb-4 border-bottom">
+        <div class="container d-flex flex-wrap justify-content-center">
+            <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
+                <span class="fs-4">京都テック専用ChatGPT</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container chat-logs" id="chatLog">
+        {% if user.is_authenticated %}
+            {% for log in chat_logs %}
+                <div class="chat-question">
+                    <strong>Q:</strong> {{ log.question | linebreaksbr }}
                 </div>
-            </form>
-        </div>
-    {% endif %}
-          <script>
-            document.getElementById('chatForm').addEventListener('submit', function() {
-                document.getElementById('submitBtn').style.display = 'none'; // 送信ボタンを隠す
-                document.getElementById('loading').style.display = 'inline-block'; // ローディングインジケーターを表示
+                <div class="chat-answer">
+                    <strong>A:</strong> {{ log.answer | linebreaksbr }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </main>
+
+    <div class="fixed-bottom">
+        <footer class="footer">
+            <div class="chat-input bg-white">
+                <form method="post" id="chatForm" class="row g-3 p-2">
+                    {% csrf_token %}
+                    <div class="col-auto">
+                        <label for="question" class="visually-hidden">Question:</label>
+                        <input type="text" class="form-control" id="question" name="question" placeholder="Ask a question...">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Ask</button>
+                        <span id="loading" style="display: none;">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            考え中...
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <a href="{% url 'top' %}" class="text-muted">Home</a> |
+            <a href="{% url 'chat_logs' %}" class="text-muted">Chat Logs</a> |
+            <a href="{% url 'logout' %}" class="text-muted">Logout</a>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('chatForm').addEventListener('submit', function() {
+            document.getElementById('submitBtn').style.display = 'none'; // 送信ボタンを隠す
+            document.getElementById('loading').style.display = 'inline-block'; // ローディングインジケーターを表示
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+            var chatLog = document.getElementById("chatLog");
+            chatLog.scrollTop = chatLog.scrollHeight;
+            var chatForm = document.getElementById("chatForm");
+            chatForm.addEventListener("submit", function() {
+                setTimeout(function() {
+                    chatLog.scrollTop = chatLog.scrollHeight;
+                }, 500); // Adjust timing as needed
             });
-          </script>
-        </div>
+        });
+    </script>
 </body>
-<footer class="footer">
-  <div class="text-center">
-      <a href="{% url 'top' %}">トップページへ</a>
-      <a href="{% url 'chat_logs' %}">ログ一覧ページへ</a>
-      <a href="{% url 'logout' %}">ログアウト</a>
-  </div>
-</footer>
 </html>
