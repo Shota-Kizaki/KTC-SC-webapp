@@ -1,37 +1,132 @@
 {% load static %}
 {% load in_group %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
-    <title>トップページ</title>
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <link rel="icon"href="{% static 'favicon.ico' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <title>ホームページ</title>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px;
+        }
+
+        .card {
+            padding: 20px;
+            background-color: #f8f8f8;
+            border: 1px solid #e3e3e3;
+            border-radius: 10px;
+        }
+
+        .card h3 {
+            color: #007bff;
+        }
+
+        .card p {
+            margin: 5px 0 15px;
+        }
+
+        .card a {
+            display: block;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .card a:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
+
 <body>
-    <h2>SCsystem</h2>
-    {% for user in users %}
-    <li>{{ user.username }}</li>
-    {% endfor %}
-    {% if user.is_authenticated %} 
-    <!--ログインしているかどうかを判定-->
-    <p>{{ user.username }}さんようこそ。</p>
-        {% if user|in_group:"管理者" %}
-        <!-- 管理者というグループに所属するユーザ用のリンク -->
-        <h2>管理者用ページ</h2>
-        <a href="{% url 'chat' %}">chatページへ</a>
-        <a href="{% url 'chat_logs' %}">ログ一覧ページへ</a>
-        <a href="{% url 'database' %}">データベースへ</a>
-        <a href="{% url 'signup' %}">ユーザー登録</a>
-        <a href="{% url 'logout' %}">ログアウト</a>
-        <!--ここに管理画面のhtmlを作成-->
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>SCsystem</strong></li>
+        </ul>
+        <ul>
+            <li><a href="{% url 'top' %}">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#" role="button">Contact</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        {% if user.is_authenticated %}
+        <h2>SCsystem</h2>
+        <p>{{ user.username }}さんようこそ。</p>
+
+            {% if user|in_group:"管理者" %}
+            <div class="grid">
+                <div class="card">
+                    <h3>chatページ</h3>
+                    <p>チャット機能にアクセスできます。</p>
+                    <a href="{% url 'chat' %}" class="button">アクセス</a>
+                </div>
+
+                <div class="card">
+                    <h3>ログ一覧ページ</h3>
+                    <p>過去のチャットログを閲覧できます。</p>
+                    <a href="{% url 'chat_logs' %}" class="button">アクセス</a>
+                </div>
+
+                <div class="card">
+                    <h3>データベース</h3>
+                    <p>データベースにアクセスできます。</p>
+                    <a href="{% url 'database' %}" class="button">アクセス</a>
+                </div>
+
+                <div class="card">
+                    <h3>ユーザー登録</h3>
+                    <p>新しいユーザーを登録できます。</p>
+                    <a href="{% url 'signup' %}" class="button">アクセス</a>
+                </div>
+
+                <div class="card">
+                    <h3>ログアウト</h3>
+                    <p>システムからログアウトします。</p>
+                    <a href="{% url 'logout' %}" class="button">アクセス</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="grid">
+                <div class="card">
+                    <h3>chatページ</h3>
+                    <p>チャット機能にアクセスできます。</p>
+                    <a href="{% url 'chat' %}" class="button">アクセス</a>
+                </div>
+
+                <div class="card">
+                    <h3>ログアウト</h3>
+                    <p>システムからログアウトします。</p>
+                    <a href="{% url 'logout' %}" class="button">アクセス</a>
+                </div>
+            </div>
+            {% endif %}
         {% else %}
-        <!-- その他のユーザ用のリンク -->
-        <a href="{% url 'chat' %}">chatページへ</a>
-        <a href="{% url 'logout' %}">ログアウト</a>
+        <div class="grid">
+            <div class="card">
+                <h3>ログイン</h3>
+                <p>システムにログインします。</p>
+                <a href="{% url 'login' %}" class="button">アクセス</a>
+            </div>
+        </div>
         {% endif %}
-    {% else %}
-    <a href="{% url 'login' %}">ログイン</a>
-    {% endif %}
+    </main>
+    <footer class="container">
+        <small>
+            <a href="https://github.com/KTC-Security-Circle">KTCセキュリティサークル</a>
+        </small>
+    </footer>
 </body>
+
 </html>

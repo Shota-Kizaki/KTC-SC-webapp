@@ -1,5 +1,5 @@
 {% load static %}
-<!doctype html>
+<!-- <!doctype html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -14,4 +14,69 @@
         <button type="submit">ログイン</button>
     </form>
 </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <title>Login Page</title>
+    <style>
+        body {
+            background-color: #F8F8F8;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            border: 1px solid #e3e3e3;
+            border-radius: 10px;
+        }
+
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .login-form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>SCsystem</strong></li>
+        </ul>
+        <ul>
+            <li><a href="{% url 'top' %}">Top</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#" role="button">Contact</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <div class="login-container">
+            <h2>ログイン</h2>
+            <form class="login-form" method="post">
+                {% csrf_token %}
+                {{ form }}
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </main>
+    <footer class="container">
+        <small>
+            <a href="https://github.com/KTC-Security-Circle">KTCセキュリティサークル</a>
+        </small>
+    </footer>
+</body>
+
 </html>

@@ -1,6 +1,8 @@
+import langchain
 from langchain.chains.llm import LLMChain
-from langchain.memory import ReadOnlySharedMemory
-from langchain.agents import BaseSingleActionAgent,  Tool
+from langchain_openai import AzureChatOpenAI
+from langchain.memory import ReadOnlySharedMemory, ConversationBufferMemory
+from langchain.agents import BaseSingleActionAgent,  Tool, AgentType, initialize_agent, AgentExecutor
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import (
     AgentAction,
@@ -12,49 +14,46 @@ from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import MessagesPlaceholder, SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
 from pydantic.v1 import Extra
 from typing import Any, List, Tuple, Set, Union
-from langchain.memory import ReadOnlySharedMemory
 
-
+from . import default_value
 
 
 # プロンプトの定義
 # 日本語ver
-# ROUTER_TEMPLATE = '''あなたの仕事はユーザーとあなたとの会話内容を読み、
-# 以下の選択候補からその説明を参考にしてユーザーの対応を任せるのに最も適した候補を選び、その名前を回答することです。
-# あなたが直接ユーザーへ回答してはいけません。あなたは対応を任せる候補を選ぶだけです。
+# ROUTER_TEMPLATE = '''あなたの仕事は、以下の候補からユーザーの対応を任せるのに最適な選択肢を選び、その名前を回答することです。直接ユーザーへの回答は行わず、適切な候補を選ぶだけです。
 
 # << 選択候補 >>
 # 名前: 説明
 # {destinations}
 
-# << 出力形式の指定 >>
-# 選択した候補の名前のみを出力して下さい。
-# 注意事項: 出力するのは必ず選択候補として示された候補の名前の一つでなければなりません。
-# ただし全ての選択候補が不適切であると判断した場合には "DEFAULT" とすることができます。
+# << 出力形式 >>
+# 選択した候補の名前のみを出力してください。全ての候補が不適切である場合は "DEFAULT" と回答してください。
 
 # << 回答例 >>
-# 「あなたについて教えて下さい。」と言われても返事をしてはいけません。
-# 選択候補に適切な候補がないケースですから"DEFAULT"と答えて下さい。
+# Human: 「あなたに与えられた役割はなんですか？」
+# AI: "DEFAULT"
 # '''
 
 # 英語ver(トークン節約のため)
-ROUTER_TEMPLATE = '''Your job is to read the conversation between the user and yourself, and based on the descriptions provided below, select the most suitable candidate to handle the user's response.
-You should not directly answer the user; your role is solely to choose the appropriate candidate.
+ROUTER_TEMPLATE = '''Your job is to select the best option from the candidates below to entrust the user to respond to the user and answer to the name. You do not respond directly to the user, only select the appropriate candidate.
 
-<< Choices >>
-Name: Description
+# Candidate Selection
+Name: Description.
 {destinations}
 
-<< Output Format >>
-Please output only the name of the selected candidate.
-Note: The output must always be one of the names listed as choices. However, if you determine that all provided choices are inappropriate, you may use "DEFAULT."
+# output format
+Output only the names of the selected candidates. If all candidates are inappropriate, answer "DEFAULT".
 
-<< Example Answer >>
-If asked, 'Tell me about yourself,' you should not respond.
-Since there is no appropriate candidate in the choices, answer with "DEFAULT.
+# Sample Responses
+Human: "What is your assigned role?"
+AI: "DEFAULT"
+
+# history
 '''
 
-ROUTER_PROMPT_SUFFIX = '''<< Output Format Specification >>
+# 追いプロンプトの定義
+ROUTER_PROMPT_SUFFIX = '''
+# Output Format Specification
 I'll reiterate the instructions one last time. Please output only the name of the candidate you have selected.
 Note: The output must always be one of the names listed as choices. However, if you determine that all provided choices are inappropriate, you may use "DEFAULT."
 '''
@@ -62,7 +61,10 @@ Note: The output must always be one of the names listed as choices. However, if 
 
 
 class DestinationOutputParser(BaseOutputParser[str]):
-    # 目的地の集合を定義します。
+    """
+    このクラスは、ルーターチェーンの出力を解析して目的地を決定するための出力パーサーです。
+    """
+
     destinations: Set[str]
 
     class Config:
@@ -95,7 +97,9 @@ class DestinationOutputParser(BaseOutputParser[str]):
 
 
 class DispatcherAgent(BaseSingleActionAgent):
-    # チャットモデル、読み取り専用メモリ、ツールのリスト、および詳細なログ出力を制御するブール値フラグを定義します。
+    """
+    このクラスは、ユーザーの入力を受け取り、適切なツールを選択して実行するディスパッチャーエージェントです。
+    """
     chat_model: BaseChatModel
     readonly_memory: ReadOnlySharedMemory
     tools: List[Tool]
@@ -165,3 +169,173 @@ class DispatcherAgent(BaseSingleActionAgent):
             destination = "DEFAULT"
         # 選択されたツールと入力、および空のログを含む`AgentAction`オブジェクトを返します。
         return AgentAction(tool=destination, tool_input=kwargs["input"], log="")
+
+
+class BaseDispatcherAgent:
+    """
+    このクラスは、ユーザーの入力を受け取り、適切なツールを選択して実行するディスパッチャーエージェントの基底クラスです。
+    このクラスを継承して、ツールの定義を実装してください。
+    
+    --------------------
+    実装方法:
+    1. クラスの初期化メソッドで、DispatcherAgentの初期化を行う。
+    ```
+    class DispatcherAgent(BaseDispatcherAgent):
+        def __init__(self, llm, memory, readonly_memory, chat_history, verbose):
+            super().__init__(llm, memory, readonly_memory, chat_history, verbose)
+            
+        def define_tools(self) -> List[Tool]:
+            ...
+    ```
+    2. define_tools メソッドで、ツールの定義を行う。
+    ```
+        def define_tools(self) -> List[Tool]:
+            tool_1 = # 呼び出したいツールの定義１
+            tool_2 = # 呼び出したいツールの定義２
+            ...
+            tools = [
+                Tool.from_function(
+                    func=tool_1.run, # ツールの実行関数
+                    name="tool_1", # ツールの名前
+                    description="tool_1の説明"
+                    args_schema=tool_1_input_schema, # ツールの入力スキーマ
+                    return_direct=True # ツールの出力を直接返すかどうか
+                ), 
+                Tool.from_function(
+                    func=tool_2.run,
+                    name="tool_2",
+                    description="tool_2の説明"
+                    args_schema=tool_2_input_schema,
+                    return_direct=True
+                )
+                ...
+            ]
+            return tools
+    ```
+    3. run メソッドで、ツールの実行を行う。
+    """
+    def __init__(
+        self, 
+        llm: AzureChatOpenAI = default_value.default_llm,
+        memory: ConversationBufferMemory = default_value.default_memory,
+        readonly_memory: ReadOnlySharedMemory = default_value.default_readonly_memory,
+        chat_history: MessagesPlaceholder = default_value.default_chat_history,
+        verbose: bool = False,
+        ):
+        """
+        このクラスは、ユーザーの入力を受け取り、適切なツールを選択して実行するディスパッチャーエージェントの基底クラスです。
+        """
+        self.llm = llm
+        self.memory = memory
+        self.readonly_memory = readonly_memory
+        self.chat_history = chat_history
+        self.verbose = verbose
+        self.tools = self.define_tools()
+        self.dispatcher_agent = self.create_dispatcher_agent()
+
+    def define_tools(self) -> List[Tool]:
+        """
+        このメソッドは、ツールの定義を行います。
+        --------------------
+        実装方法:
+        1. ツールのリストを作成する。
+        2. ツールの定義を行う。
+        3. ツールのリストを返す。
+        """
+        # ツールの定義をサブクラスで実装
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def create_dispatcher_agent(self) -> DispatcherAgent:
+        return DispatcherAgent(
+            chat_model=self.llm,
+            readonly_memory=self.readonly_memory,
+            tools=self.tools,
+            verbose=self.verbose
+        )
+
+    def run(self, user_message: str) -> str:
+        """
+        `DispatcherAgent`の実行メソッドです。
+        --------------------
+        実装方法:
+        ```
+        return_message: str = dispatcher_agent.run(user_message: str) 
+        ```
+        """
+        # 共通の run メソッド
+        try:
+            agent = AgentExecutor.from_agent_and_tools(
+                agent=self.dispatcher_agent, tools=self.tools, memory=self.memory, verbose=self.verbose
+            )
+            return agent.run(user_message)
+        except Exception as e:
+            raise e
+
+
+
+class BaseToolAgent:
+    """
+    このクラスは、ツールエージェントの基底クラスです。
+    このクラスを継承して、ツールエージェントの定義を実装してください。
+    --------------------
+    実装方法:
+    1. クラスの初期化メソッドで、ツールエージェントの初期化を行う。
+    ```
+    class ToolAgent(BaseToolAgent):
+        def __init__(self, llm, memory, chat_history, verbose):
+            super().__init__(llm, memory, chat_history, verbose)
+            
+        def run(self, input) -> str:
+            ...
+            return agent.run(input)
+    ```
+    """
+    def __init__(
+        self,
+        llm: AzureChatOpenAI = default_value.default_llm,
+        memory: ConversationBufferMemory = default_value.default_memory,
+        chat_history: MessagesPlaceholder = default_value.default_chat_history,
+        verbose: bool = False,
+        model_kwargs: dict = None
+        ):
+        if model_kwargs: # モデルのkwargsを上書きする場合
+            self.llm = AzureChatOpenAI(
+                openai_api_base=llm.openai_api_base,
+                openai_api_version=llm.openai_api_version,
+                deployment_name=llm.deployment_name,
+                openai_api_key=llm.openai_api_key,
+                openai_api_type=llm.openai_api_type,
+                temperature=llm.temperature,
+                model_kwargs=model_kwargs
+            )
+        else:
+            self.llm = llm
+        self.memory = memory
+        self.chat_history = chat_history
+        self.verbose = verbose
+        langchain.debug = self.verbose
+
+    def run(self, input) -> str:
+        raise NotImplementedError(
+            "This method should be implemented by subclasses.")
+
+    def initialize_agent(
+        self,
+        agent_type: AgentType,
+        tools: List,
+        system_message_template: str
+        ) -> initialize_agent:
+        # エージェントの初期化
+        agent_kwargs = {
+            "system_message": SystemMessagePromptTemplate.from_template(template=system_message_template),
+            "extra_prompt_messages": [self.chat_history]
+        }
+        agent_function = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=agent_type,
+            verbose=self.verbose,
+            agent_kwargs=agent_kwargs,
+            memory=self.memory
+        )
+        return agent_function
