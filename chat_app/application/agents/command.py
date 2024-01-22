@@ -9,8 +9,12 @@ class CheckCommandParam:
         self.command = command
 
 
+
 def check_command(user_message: str) -> CheckCommandParam:
     if user_message.startswith('/'):
+        if user_message == '/help':
+            param = CheckCommandParam(check_command_bool=True, command='help')
+        
         space_index = user_message.find(' ')
         if space_index != -1:
             command = user_message[1:space_index]
@@ -20,6 +24,16 @@ def check_command(user_message: str) -> CheckCommandParam:
     else:
         param = CheckCommandParam()
     return param
+
+
+HELP_MESSAGE = """コマンド一覧
+  ・/help : コマンド一覧を表示します。
+  ・/search : 検索を行います。
+  ・/procedure : 手続きを行います。
+  ・/horoscope : 星占いを行います。
+
+以上の中から選択し、”/コマンド名+半角スペース” で実行できます。
+"""
 
 class Command:
 
@@ -35,15 +49,7 @@ class Command:
         self.user_message = user_message.replace("/" + command, "", 1)
         
         if command == "help":
-            return_text = """コマンド一覧
-  ・/help : コマンド一覧を表示します。
-  ・/search : 検索を行います。
-  ・/procedure : 手続きを行います。
-  ・/horoscope : 星占いを行います。
-
-以上の中から選択し、”/コマンド名+半角スペース” で実行できます。
-            """
-            return return_text
+            return HELP_MESSAGE
         elif command == "search":
             agent = tools.SearchAgent(llm=self.llm, memory=self.memory, readonly_memory=self.readonly_memory, chat_history=self.chat_history, verbose=self.verbose)
             return agent.run(self.user_message)
