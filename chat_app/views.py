@@ -12,7 +12,7 @@ from django.utils.dateparse import parse_date
 from .application.memory import get_contexts
 from langchain.memory import ConversationBufferMemory
 from django.contrib.auth.decorators import login_required
-from .application import agents
+import tech_agents
 
 load_dotenv(override=True)
 
@@ -30,9 +30,14 @@ def chat(request):
             contexts = get_contexts(user_id)
             for context in contexts:
                 memory.save_context({"input": context["question"]}, {"output": context["answer"]})
-            agent = agents.MainAgent(memory=memory, verbose=True)
-            result = agent.run(input_text)
+            agent = tech_agents.MainAgent(memory=memory, verbose=True)
+            try:
+                result = agent.run(input_text)
+            except Exception as e:
+                result = "エラーが発生しました。"
+                return(e)
             ChatLog.objects.create(user=request.user, question=input_text, answer=result)
+            
 
     # 新しいものが下に表示されるようにクエリを変更
     chat_logs = ChatLog.objects.filter(user=request.user).order_by('created_at')
@@ -44,16 +49,16 @@ def log_list(request):
 
     # ユーザーによるフィルタリング
     user_id = request.user.id
-    if user_id:
+    if user_id and 'user_filter' in request.GET:
         logs = logs.filter(user_id=user_id)
 
     # 日付によるフィルタリング
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    if start_date:
+    if start_date and 'date_filter' in request.GET:
         start_date = parse_date(start_date)
         logs = logs.filter(created_at__date__gte=start_date)
-    if end_date:
+    if end_date and 'date_filter' in request.GET:
         end_date = parse_date(end_date)
         logs = logs.filter(created_at__date__lte=end_date)
 
@@ -62,7 +67,6 @@ def log_list(request):
         'users': User.objects.all(),
     }
     return render(request, 'chat_app/log_list.html', context)
-
 
 #ダウンロード機能
 

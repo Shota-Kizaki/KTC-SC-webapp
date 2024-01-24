@@ -7,49 +7,86 @@
     <title>ChatGPT</title>
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
     <link rel="icon"href="{% static 'favicon.ico' %}">
+    <style>
+        body {
+            padding-bottom: 70px; /* Space for fixed footer */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-logs {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-bottom: 70px; /* Additional space for the footer */
+        }
+        .chat-question, .chat-answer {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+        }
+        .chat-answer {
+            background-color: #e2e6ea;
+            text-align: right;
+        }
+        .fixed-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1030; /* Ensure it's above other elements */
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
 </head>
-  <body>
+  <body class="container chat-logs" id="chatLog">
     {% if user.is_authenticated %}
-    <div class="container">
-      <div class="mt-5">
-        <form method="get">
-            <select name="user">
-                <option value="">ユーザーを選択</option>
-                {% for user in users %}
-                    <option value="{{ user.id }}">{{ user.username }}</option>
-                {% endfor %}
-            </select>
-            <input type="date" name="start_date">
-            <input type="date" name="end_date">
-            <button type="submit">検索</button>
-        </form>
-        
-        <table>
-            <tr>
-                <th>日付</th>
-                <th>ユーザー名</th>
-                <th>質問</th>
-                <th>回答</th>
-            </tr>
-            {% for log in logs %}
-            <tr>
-                <td>{{ log.created_at }}</td>
-                <td>{{ log.user.username }}</td>
-                <td>{{ log.question }}</td>
-                <td>{{ log.answer }}</td>
-            </tr>
-            {% endfor %}
-        </table>
         {% if user|in_group:"管理者" %}
-        <!-- 管理者グループのユーザーのみに表示されるコンテンツ -->
-        <a href="{% url 'download_logs' %}?user={{ request.GET.user }}&start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}">ログをダウンロード</a>
+        <div class="container">
+        <div class="mt-5">
+            <form method="get">
+                <select name="user">
+                    <option value="">ユーザーを選択</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="start_date">
+                <input type="date" name="end_date">
+                <button type="submit">検索</button>
+            </form>
+            
+            <table>
+                <tr>
+                    <th>日付</th>
+                    <th>ユーザー名</th>
+                    <th>質問</th>
+                    <th>回答</th>
+                </tr>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.created_at }}</td>
+                    <td>{{ log.user.username }}</td>
+                    <td>{{ log.question }}</td>
+                    <td>{{ log.answer }}</td>
+                </tr>
+                {% endfor %}
+            </table>    
         {% endif %}
-
-    <a href="{% url 'top' %}">トップページへ</a>
-    <a href="{% url 'logout' %}">ログアウト</a>
-    {% else %}
-    <a href="{% url 'login' %}">ログインしてください。</a>
-    {% endif %}
-    
+        <footer class="footer">
+            <a href="{% url 'download_logs' %}?user={{ request.GET.user }}&start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}">ログをダウンロード</a>
+            <a href="{% url 'top' %}">トップページへ</a>
+            <a href="{% url 'logout' %}">ログアウト</a>
+            {% else %}
+            <a href="{% url 'top' %}">トップページへ</a>
+            <a href="{% url 'login' %}">ログインしてください。</a>
+            {% endif %}
+        </footer>
   </body>
 </html>
