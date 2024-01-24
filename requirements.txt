@@ -9,4 +9,4 @@ pyodbc
 sqlalchemy
 azure-search-documents
 azure-identity
-git+https://github.com/KTC-Security-Circle/KyotoTech-Agents.git#egg=tech_agents
+git+https://github.com/KTC-Security-Circle/KyotoTech-Agents.git
