@@ -43,6 +43,13 @@
             text-align: center;
             border-top: 1px solid #e9ecef;
         }
+        .autoresize {
+            min-height: 40px; /* 初期の最小高さ */
+            overflow-y: hidden; /* スクロールバーを非表示にする */
+            resize: none; /* ユーザーによるリサイズを無効にする */
+            width: 100%; /* 横幅を親要素の100%に設定 */
+            max-width: 700px; /* 最大横幅を500pxに設定 */
+        }
     </style>
 </head>
 <body>
@@ -74,7 +81,7 @@
                     {% csrf_token %}
                     <div class="col-auto">
                         <label for="question" class="visually-hidden">Question:</label>
-                        <input type="text" class="form-control" id="question" name="question" placeholder="Ask a question...">
+                        <textarea class="form-control autoresize" id="question" name="question" placeholder="質問をどうぞ"></textarea>
                     </div>
                     <div class="col-auto">
                         <button type="submit" class="btn btn-primary" id="submitBtn">Ask</button>
@@ -107,9 +114,33 @@
             chatForm.addEventListener("submit", function() {
                 setTimeout(function() {
                     chatLog.scrollTop = chatLog.scrollHeight;
-                }, 500); // Adjust timing as needed
+                }, 50); // Adjust timing as needed
             });
         });
+        document.addEventListener('input', function (event) {
+        if (event.target.classList.contains('autoresize')) {
+            adjustTextAreaHeight(event.target);
+        }
+        }, false);
+
+        function adjustTextAreaHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+        };
+        document.getElementById('question').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // デフォルトのエンターキーの動作を防止
+
+            // ローディングインジケーターを表示
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'inline-block';
+
+            // 少し遅延させてからフォームを送信
+            setTimeout(function() {
+                document.getElementById('chatForm').submit();
+            }, 100);
+        }
+    });
     </script>
 </body>
 </html>
